@@ -1,0 +1,532 @@
+## ams_version=1.0
+
+Model Main_case3120_MTDC {
+    DeclarationSection sets {
+        Set Bus {
+            Index: b;
+            Definition: ElementRange(1,3125, Prefix: "B");
+        }
+        Set Gen {
+            Index: g;
+            Definition: ElementRange(1,505, Prefix: "G");
+        }
+        Set Line {
+            Index: l;
+            Definition: ElementRange(1,3703, Prefix: "L");
+        }
+        Set CostCoefficient {
+            Index: cc;
+            Definition: {
+                ! (n2)x^2 + (n1)x +n0 MATPOWER Style
+                ! CC1 x^2 + CC2x +CC3 AIMMS Style
+                ElementRange(1,3, Prefix: "CC")
+            }
+        }
+        Set ConvAll {
+            SubsetOf: Line;
+            Index: allConv;
+        }
+        Set Conv1 {
+            SubsetOf: Line;
+            Index: ConvI;
+        }
+        Set VdcBeq {
+            SubsetOf: Line;
+            Index: VfBeq;
+        }
+        Set VdcFixed {
+            SubsetOf: Bus;
+            Index: Vdc;
+        }
+        Set VdcNodes {
+            SubsetOf: Bus;
+            Index: VdcNode;
+        }
+        Set Pfshifter {
+            SubsetOf: Line;
+            Index: Pshift;
+        }
+        Set Qtma {
+            SubsetOf: Line;
+            Index: maQt;
+        }
+        Set Statcoms {
+            SubsetOf: Line;
+            Index: cev;
+        }
+        Set TransformersTap {
+            SubsetOf: Line;
+            Index: tr;
+        }
+        Set Droop {
+            SubsetOf: Line;
+            Index: dp;
+        }
+        Set DCLines {
+            SubsetOf: Line;
+            Index: DCBran;
+        }
+    }
+    Section CaseData {
+        DeclarationSection MVABase {
+            Parameter Sbase {
+                Definition: {
+                    !The base is in MVA
+                    100;
+                }
+            }
+            Parameter Pi {
+                Definition: {
+                    3.14159265359
+                    !used for the calculation of losses
+                }
+            }
+            Parameter kdp {
+                Definition: 5;
+            }
+        }
+        DeclarationSection Buses {
+            Parameter VmMax {
+                IndexDomain: b;
+            }
+            Parameter VmMin {
+                IndexDomain: b;
+            }
+            Parameter PL {
+                IndexDomain: b;
+            }
+            Parameter QL {
+                IndexDomain: b;
+            }
+            Parameter GShunt {
+                IndexDomain: b;
+            }
+            Parameter BShunt {
+                IndexDomain: b;
+            }
+        }
+        DeclarationSection Generators {
+            ElementParameter GenLoc {
+                IndexDomain: g;
+                Range: Bus;
+            }
+            Parameter GenStat {
+                IndexDomain: g;
+            }
+            Parameter Pmax {
+                IndexDomain: g;
+            }
+            Parameter Pmin {
+                IndexDomain: g;
+            }
+            Parameter Qmax {
+                IndexDomain: g;
+            }
+            Parameter Qmin {
+                IndexDomain: g;
+            }
+            Parameter PCostCoeff {
+                IndexDomain: (g,cc);
+            }
+            Parameter QCostCoeff {
+                IndexDomain: (g,cc);
+            }
+        }
+        DeclarationSection Branches {
+            ElementParameter fb {
+                IndexDomain: l;
+                Range: Bus;
+            }
+            ElementParameter tb {
+                IndexDomain: l;
+                Range: Bus;
+            }
+            Parameter rs {
+                IndexDomain: l;
+            }
+            Parameter BranchStat {
+                IndexDomain: l;
+            }
+            Parameter xs {
+                IndexDomain: l;
+            }
+            Parameter bc {
+                IndexDomain: l;
+            }
+            Parameter RateA {
+                IndexDomain: l;
+            }
+            Parameter PfShiftControl {
+                IndexDomain: l;
+            }
+            Parameter QtmaControl {
+                IndexDomain: l;
+            }
+            Parameter k2 {
+                IndexDomain: l;
+            }
+            Parameter G0 {
+                IndexDomain: l;
+            }
+            Parameter BeqMin {
+                IndexDomain: l;
+            }
+            Parameter BeqMax {
+                IndexDomain: l;
+            }
+            Parameter ThetaShMin {
+                IndexDomain: l;
+            }
+            Parameter ThetaShMax {
+                IndexDomain: l;
+            }
+            Parameter maMax {
+                IndexDomain: l;
+            }
+            Parameter maMin {
+                IndexDomain: l;
+            }
+            Parameter GswMax {
+                IndexDomain: l;
+            }
+            Parameter GswMin {
+                IndexDomain: l;
+            }
+            Parameter Alpha1 {
+                IndexDomain: l;
+            }
+            Parameter Beta2 {
+                IndexDomain: l;
+            }
+            Parameter Gamma3 {
+                IndexDomain: l;
+            }
+        }
+    }
+    DeclarationSection OptVarBasic {
+        Variable Va {
+            IndexDomain: b;
+            Range: free;
+        }
+        Variable Vm {
+            IndexDomain: b;
+            Range: [VmMin(b), VmMax(b)];
+        }
+        Variable Pg {
+            IndexDomain: g;
+            Range: [Pmin(g), Pmax(g)];
+        }
+        Variable Qg {
+            IndexDomain: g;
+            Range: [Qmin(g), Qmax(g)];
+        }
+    }
+    DeclarationSection OptVarFUBM {
+        Variable ma {
+            IndexDomain: l;
+            Range: [maMin(l), maMax(l)];
+        }
+        Variable ThetaSh {
+            IndexDomain: l;
+            Range: [ThetaShMin(l), ThetaShMax(l)];
+        }
+        Variable Beq {
+            IndexDomain: l;
+            Range: [BeqMin(l), BeqMax(l)];
+        }
+    }
+    Section CalculationData {
+        DeclarationSection ConvLosses {
+            Variable ABSIt {
+                IndexDomain: l;
+                Range: free;
+                Definition: sqrt( (ReIt(l))^2 + (ImIt(l))^2 );
+            }
+            Variable ReIt {
+                IndexDomain: l;
+                Range: free;
+                Definition: Vm(fb(l))*RYtf(l)*cos(Va(fb(l))) + Vm(tb(l))*RYtt(l)*cos(Va(tb(l))) - Vm(fb(l))*IYtf(l)*sin(Va(fb(l))) - Vm(tb(l))*IYtt(l)*sin(Va(tb(l)));
+            }
+            Variable ImIt {
+                IndexDomain: l;
+                Range: free;
+                Definition: Vm(fb(l))*IYtf(l)*cos(Va(fb(l))) + Vm(tb(l))*IYtt(l)*cos(Va(tb(l))) + Vm(fb(l))*RYtf(l)*sin(Va(fb(l))) + Vm(tb(l))*RYtt(l)*sin(Va(tb(l)));
+            }
+            Variable LineLoss {
+                IndexDomain: l;
+                Range: free;
+                Definition: abs((Pf(l)*Sbase)+(Pt(l)*Sbase));
+            }
+        }
+        DeclarationSection BranchVariables {
+            Variable Gsw {
+                IndexDomain: l;
+                Range: free;
+                Definition: {
+                    !Range [GswMin(l), GswMax(l)]
+                    !G0(l) !Constant loss
+                    ( Gamma3(l)*(( ABSIt(l) )^2) + Beta2(l)*( ABSIt(l)) + Alpha1(l) )  /  (Vm(fb(l)))^2!IEC VSC loss
+                }
+            }
+            Variable RYff {
+                IndexDomain: l;
+                Range: free;
+                Definition: {
+                    Gsw(l)+(rs(l)/((rs(l)^2)+(xs(l)^2)))*(1/((k2(l)*ma(l))^2)) !<-- For VSC, Notice that Gsw has to be calculated. and replaced in the equation below
+                    !G0(l)+(rs(l)/((rs(l)^2)+(xs(l)^2)))*(1/((k2(l)*ma(l))^2))
+                }
+            }
+            Variable RYft {
+                IndexDomain: l;
+                Range: free;
+                Definition: (-rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l))-(xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l));
+            }
+            Variable RYtf {
+                IndexDomain: l;
+                Range: free;
+                Definition: (-rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l))   +    (xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l));
+            }
+            Variable RYtt {
+                IndexDomain: l;
+                Range: free;
+                Definition: rs(l)/((rs(l)^2)+(xs(l)^2));
+            }
+            Variable IYff {
+                IndexDomain: l;
+                Range: free;
+                Definition: ((-xs(l)/((rs(l)^2)+(xs(l)^2)))+(bc(l)/2)+Beq(l))*(1/((k2(l)*ma(l))^2));
+            }
+            Variable IYft {
+                IndexDomain: l;
+                Range: free;
+                Definition: (-rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l))+(xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l));
+            }
+            Variable IYtf {
+                IndexDomain: l;
+                Range: free;
+                Definition: (rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l))    +    (xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l));
+            }
+            Variable IYtt {
+                IndexDomain: l;
+                Range: free;
+                Definition: -xs(l)/((rs(l)^2)+(xs(l)^2))+(bc(l)/2);
+            }
+        }
+        DeclarationSection PowerInjectionVariables {
+            Variable Pf {
+                IndexDomain: l;
+                Range: free;
+                Definition: RYff(l)*((Vm(fb(l)))^2)+RYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*cos((Va(fb(l)))-(Va(tb(l))))+IYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*sin((Va(fb(l)))-(Va(tb(l))));
+            }
+            Variable Pt {
+                IndexDomain: l;
+                Range: free;
+                Definition: ((Vm(tb(l)))^2)*RYtt(l) + (Vm(tb(l)))*(Vm(fb(l)))*RYtf(l)*cos( (Va(tb(l)))-(Va(fb(l))) ) + (Vm(tb(l)))*(Vm(fb(l)))*IYtf(l)*sin( (Va(tb(l)))-(Va(fb(l))) );
+            }
+            Variable Qf {
+                IndexDomain: l;
+                Range: free;
+                Definition: -IYff(l)*((Vm(fb(l)))^2) - IYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*cos( (Va(fb(l)))-(Va(tb(l))) ) + RYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*sin( (Va(fb(l)))-(Va(tb(l))) );
+            }
+            Variable Qt {
+                IndexDomain: l;
+                Range: free;
+                Definition: -1*((Vm(tb(l)))^2)*IYtt(l) - (Vm(tb(l)))*(Vm(fb(l)))*IYtf(l)*cos( (Va(tb(l)))-(Va(fb(l))) ) + (Vm(tb(l)))*(Vm(fb(l)))*RYtf(l)*sin( (Va(tb(l)))-(Va(fb(l))) );
+            }
+            Variable Sf {
+                IndexDomain: l;
+                Range: free;
+                Definition: sqrt(Pf(l)^2 + Qf(l)^2);
+            }
+            Variable St {
+                IndexDomain: l;
+                Range: free;
+                Definition: sqrt(Pt(l)^2 + Qt(l)^2);
+            }
+        }
+    }
+    Section CaseConstraint {
+        DeclarationSection EqualityConstraints {
+            Constraint VaSlack {
+                Definition: {
+                    Va('B0031')=0; !Reference Bus
+                }
+            }
+            Constraint Pbal {
+                IndexDomain: b;
+                Definition: {
+                    !sum[l|fb(l)=b,Pf(l)*Sbase] + sum[l|tb(l)=b,Pt(l)*Sbase] + PL(b)*Sbase - sum[g|GenLoc(g)=b, Pg(g)*Sbase] = 0 !Original
+                    !sum[l|fb(l)=b,Pf(l)*Sbase] + sum[l|tb(l)=b,Pt(l)*Sbase] + PL(b)*Sbase - sum[g|GenLoc(g)=b, Pg(g)*Sbase]  - (GShunt(b)*Sbase*(Vm(b)^2)) = 0 !Modified
+                    !sum[l|fb(l)=b,Pf(l)]        + sum[l|tb(l)=b,Pt(l)      ] + PL(b)       - sum[g|GenLoc(g)=b, Pg(g)         - (GShunt(b)      *(Vm(b)^2))] = 0
+                    !sum[l|fb(l)=b,Pf(l)]        + sum[l|tb(l)=b,Pt(l)      ] + PL(b)       - sum[g|GenLoc(g)=b, Pg(g)] = 0
+                    sum[l|fb(l)=b,Pf(l)]        + sum[l|tb(l)=b,Pt(l)      ] + PL(b)       - sum[g|GenLoc(g)=b, (Pg(g)*GenStat(g))] = 0
+                }
+            }
+            Constraint Qbal {
+                IndexDomain: b;
+                Definition: {
+                    !sum[l|fb(l)=b,Qf(l)*Sbase] + sum[l|tb(l)=b,Qt(l)*Sbase] + QL(b)*Sbase - sum[g|GenLoc(g)=b, Qg(g)*Sbase] - (BShunt(b)*Sbase*(Vm(b)^2)) = 0
+                    !sum[l|fb(l)=b,Qf(l)       ] + sum[l|tb(l)=b,Qt(l)      ] + QL(b)       - sum[g|GenLoc(g)=b, Qg(g)      ] - (BShunt(b)*      (Vm(b)^2)) = 0
+                    sum[l|fb(l)=b,Qf(l)       ] + sum[l|tb(l)=b,Qt(l)      ] + QL(b)       - sum[g|GenLoc(g)=b, (Qg(g)*GenStat(g))      ] - (BShunt(b)*      (Vm(b)^2)) = 0
+                }
+            }
+        }
+        DeclarationSection EqualityConstraintFUBM {
+            Constraint ZeroConst {
+                IndexDomain: ConvI;
+                Definition: {
+                    Qf(ConvI)*Sbase=0
+                    !Zero Constraint
+                }
+            }
+            Constraint PShifterConst {
+                IndexDomain: Pshift;
+                Definition: Pf(Pshift)*Sbase-PfShiftControl(Pshift)*Sbase=0;
+            }
+            Constraint QtmaConst {
+                IndexDomain: maQt;
+                Definition: Qt(maQt)*Sbase-QtmaControl(maQt)*Sbase=0;
+            }
+        }
+        DeclarationSection InequalityConstraints {
+            Constraint hSf {
+                IndexDomain: l;
+                Definition: {
+                    Pf(l)^2 + Qf(l)^2  <= RateA(l)^2
+                    !( (Pf(l)*Sbase)^2 + (Qf(l)*Sbase)^2 ) <= (RateA(l)*Sbase)^2
+                }
+            }
+            Constraint hSt {
+                IndexDomain: l;
+                Definition: {
+                    Pt(l)^2 + Qt(l)^2 <= RateA(l)^2
+                    !( (Pt(l)*Sbase)^2 + (Qt(l)*Sbase)^2 ) <= (RateA(l)*Sbase)^2
+                }
+            }
+        }
+    }
+    DeclarationSection ObjectiveFunction {
+        Variable GenCost {
+            Range: free;
+            Definition: {
+                !sum[g,PCostCoeff(g,'CC1')*abs(Pg(g)*Sbase)^2 + PCostCoeff(g,'CC2')*abs(Pg(g)*Sbase) + PCostCoeff(g,'CC3')]     +    sum[g,QCostCoeff(g,'CC1')*abs(Qg(g)*Sbase)^2 + QCostCoeff(g,'CC2')*abs(Qg(g)*Sbase) + QCostCoeff(g,'CC3')]
+                !sum[g,PCostCoeff(g,'CC1')*   (Pg(g)*Sbase)^2 + PCostCoeff(g,'CC2')*   (Pg(g)*Sbase) + PCostCoeff(g,'CC3')]     +    sum[g,QCostCoeff(g,'CC1')*   (Qg(g)*Sbase)^2 + QCostCoeff(g,'CC2')*   (Qg(g)*Sbase) + QCostCoeff(g,'CC3')]
+                !sum[g,PCostCoeff(g,'CC1')*(Pg(g)*Sbase)^2 + PCostCoeff(g,'CC2')*(Pg(g)*Sbase) + PCostCoeff(g,'CC3')]
+                sum[g,PCostCoeff(g,'CC1')*   ((Pg(g)*GenStat(g))*Sbase)^2 + PCostCoeff(g,'CC2')*   ((Pg(g)*GenStat(g))*Sbase) + PCostCoeff(g,'CC3')]     +    sum[g,QCostCoeff(g,'CC1')*   ((Qg(g)*GenStat(g))*Sbase)^2 + QCostCoeff(g,'CC2')*   ((Qg(g)*GenStat(g))*Sbase) + QCostCoeff(g,'CC3')]
+            }
+        }
+        Variable SystemLosses {
+            Range: free;
+            Definition: sum[l,abs((Pf(l)*Sbase)+(Pt(l)*Sbase))];
+        }
+        MathematicalProgram OPF {
+            Objective: GenCost;
+            Direction: minimize;
+            Constraints: AllConstraints;
+            Variables: AllVariables;
+            Type: Automatic;
+        }
+    }
+    Procedure MainInitialization {
+        Body: {
+            !Initialise Voltages
+            Vm(b):=(VmMax(b)+VmMin(b))/2; !voltage control
+            !Vm(b) := 1.1;
+            Va(b):=0;
+            !Initialise Generators
+            Pg(g) := (Pmax(g)+Pmin(g))/2;
+            Qg(g) := (Qmax(g)+Qmin(g))/2;
+            !Initialise VSC Controls
+            
+            !ThetaSh(l):=ThetaShMax(l); 
+            ThetaSh(l):=(ThetaShMax(l)+ThetaShMin(l))/2; !Pf shifter control
+            ThetaSh(Pshift):=(ThetaShMax(Pshift)+ThetaShMin(Pshift))/2; !Pf shifter control
+            Beq(l):=0; 
+            Beq(ConvI):=(BeqMax(ConvI)+BeqMin(ConvI))/2; !Zero constraint
+            Beq(VfBeq):=(BeqMax(VfBeq)+BeqMin(VfBeq))/2; !Vdc Control
+            !ma(l):=maMax(l);
+            ma(l):=(maMin(l)+maMax(l))/2;
+            ma(allConv):=(maMin(allConv)+maMax(allConv))/2;
+            
+            !Initialise VSC Calculations (Parameters)
+            !Zsm(allConv) := sqrt((rs(allConv))^2 +(xs(allConv))^2);
+            !ThetaZs(allConv) := arctan(xs(allConv)/rs(allConv));
+            !ReYs(allConv) :=(1/Zsm(allConv))*cos(ThetaZs(allConv));
+            !ImYs(allConv) :=(1/Zsm(allConv))*sin(ThetaZs(allConv));
+            !
+            !ReItrfACT(allConv) :=-Vm(fb(allConv))*ReYs(allConv)*cos(Va(fb(allConv)))   +   Vm(fb(allConv))*(Beq(allConv)+(bc(allConv)/2)-ImYs(allConv))*cos(Pi-Va(fb(allConv)))   +   (Vm(tb(allConv))/(k2(allConv)*ma(allConv)*Zsm(allConv)))*cos(Va(tb(allConv))-ThetaSh(allConv)-ThetaZs(allConv));
+            !ImItrfACT(allConv) :=-Vm(fb(allConv))*ReYs(allConv)*sin(Va(fb(allConv)))   -   Vm(fb(allConv))*(Beq(allConv)+(bc(allConv)/2)-ImYs(allConv))*sin(Pi-Va(fb(allConv)))   +   (Vm(tb(allConv))/(k2(allConv)*ma(allConv)*Zsm(allConv)))*sin(Va(tb(allConv))-ThetaSh(allConv)-ThetaZs(allConv));
+            !ItrfACT(allConv) :=sqrt((ReItrfACT(allConv))^2+(ImItrfACT(allConv))^2);
+            !ReItrfNOM(allConv) :=-1*ReYs(allConv)*cos(Va(fb(allConv)))   +                 1*(Beq(allConv)+(bc(allConv)/2)-ImYs(allConv))*cos(Pi-Va(fb(allConv)))   +   (Vm(tb(allConv))/(k2(allConv)*ma(allConv)*Zsm(allConv)))*cos(Va(tb(allConv))-ThetaSh(allConv)-ThetaZs(allConv));
+            !ImItrfNOM(allConv) :=-1*ReYs(allConv)*sin(Va(fb(allConv)))   -                 1*(Beq(allConv)+(bc(allConv)/2)-ImYs(allConv))*sin(Pi-Va(fb(allConv)))   +   (Vm(tb(allConv))/(k2(allConv)*ma(allConv)*Zsm(allConv)))*sin(Va(tb(allConv))-ThetaSh(allConv)-ThetaZs(allConv));
+            !ItrfNOM(allConv) :=sqrt((ReItrfNOM(allConv))^2+(ImItrfNOM(allConv))^2);
+            
+            !Initialise Extra Variables
+            RYff(l):=Gsw(l)+(rs(l)/((rs(l)^2)+(xs(l)^2)))*(1/((k2(l)*ma(l))^2));
+            RYft(l):=(-rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l))-(xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l));
+            RYtf(l):=(-rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l))   +    (xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l));
+            RYtt(l):=rs(l)/((rs(l)^2)+(xs(l)^2));
+            
+            IYff(l):=((-xs(l)/((rs(l)^2)+(xs(l)^2)))+(bc(l)/2)+Beq(l))*(1/((k2(l)*ma(l))^2));
+            IYft(l):=(-rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l))+(xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l));
+            IYtf(l):=(rs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*sin(ThetaSh(l))    +    (xs(l)/((k2(l)*ma(l))*((rs(l)^2)+(xs(l)^2))))*cos(ThetaSh(l));
+            IYtt(l):=-xs(l)/((rs(l)^2)+(xs(l)^2))+(bc(l)/2);
+            
+            Pf(l) :=RYff(l)*((Vm(fb(l)))^2)+RYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*cos((Va(fb(l)))-(Va(tb(l))))+IYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*sin((Va(fb(l)))-(Va(tb(l))));
+            Pt(l) :=((Vm(tb(l)))^2)*RYtt(l) + (Vm(tb(l)))*(Vm(fb(l)))*RYtf(l)*cos( (Va(tb(l)))-(Va(fb(l))) ) + (Vm(tb(l)))*(Vm(fb(l)))*IYtf(l)*sin( (Va(tb(l)))-(Va(fb(l))) );
+            Qf(l) :=-IYff(l)*((Vm(fb(l)))^2) - IYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*cos( (Va(fb(l)))-(Va(tb(l))) ) + RYft(l)*(Vm(fb(l)))*(Vm(tb(l)))*sin( (Va(fb(l)))-(Va(tb(l))) );
+            Qt(l) :=-1*((Vm(tb(l)))^2)*IYtt(l) - (Vm(tb(l)))*(Vm(fb(l)))*IYtf(l)*cos( (Va(tb(l)))-(Va(fb(l))) ) + (Vm(tb(l)))*(Vm(fb(l)))*RYtf(l)*sin( (Va(tb(l)))-(Va(fb(l))) );
+            Sf(l) :=sqrt(Pf(l)^2 + Qf(l)^2);
+            St(l) :=sqrt(Pt(l)^2 + Qt(l)^2);
+            
+            !Initialise Gsw Losses
+            ABSIt(l):= sqrt( (ReIt(l))^2 + (ImIt(l))^2 );
+            ReIt(l):= Vm(fb(l))*RYtf(l)*cos(Va(fb(l))) + Vm(tb(l))*RYtt(l)*cos(Va(tb(l))) - Vm(fb(l))*IYtf(l)*sin(Va(fb(l))) - Vm(tb(l))*IYtt(l)*sin(Va(tb(l)));
+            ImIt(l):= Vm(fb(l))*IYtf(l)*cos(Va(fb(l))) + Vm(tb(l))*IYtt(l)*cos(Va(tb(l))) + Vm(fb(l))*RYtf(l)*sin(Va(fb(l))) + Vm(tb(l))*RYtt(l)*sin(Va(tb(l)));
+            !Gsw(l):=G0(l); !nominal loss
+            !Gsw(l):=(GswMax(l)+GswMin(l))/2; !nominal loss
+            Gsw(l):= ( Gamma3(l)*(( ABSIt(l) )^2) + Beta2(l)*( ABSIt(l)) + Alpha1(l) )  /  (Vm(fb(l)));!IEC VSC loss
+            
+            !Initialise Objective function
+            GenCost :=sum[g,PCostCoeff(g,'CC1')*   ((Pg(g)*GenStat(g))*Sbase)^2 + PCostCoeff(g,'CC2')*   ((Pg(g)*GenStat(g))*Sbase) + PCostCoeff(g,'CC3')]     +    sum[g,QCostCoeff(g,'CC1')*   ((Qg(g)*GenStat(g))*Sbase)^2 + QCostCoeff(g,'CC2')*   ((Qg(g)*GenStat(g))*Sbase) + QCostCoeff(g,'CC3')];
+            SystemLosses := sum[l,abs((Pf(l)*Sbase)+(Pt(l)*Sbase))];
+        }
+        Comment: "Add initialization statements here that do NOT require any library being initialized already.";
+    }
+    Procedure PostMainInitialization {
+        Comment: {
+            "Add initialization statements here that require that the libraries are already initialized properly,
+            or add statements that require the Data Management module to be initialized."
+        }
+    }
+    Procedure MainExecution {
+        Body: {
+            Solve OPF;
+            
+            !if ( MinCost.ProgramStatus <> 'Optimal' )then
+            !	empty Va,Vm,Pg,Qg;
+            !endif;
+        }
+    }
+    Procedure PreMainTermination {
+        Body: {
+            return DataManagementExit();
+        }
+        Comment: {
+            "Add termination statements here that require all libraries to be still alive.
+            Return 1 if you allow the termination sequence to continue.
+            Return 0 if you want to cancel the termination sequence."
+        }
+    }
+    Procedure MainTermination {
+        Body: {
+            return 1;
+        }
+        Comment: {
+            "Add termination statements here that do not require all libraries to be still alive.
+            Return 1 to allow the termination sequence to continue.
+            Return 0 if you want to cancel the termination sequence.
+            It is recommended to only use the procedure PreMainTermination to cancel the termination sequence and let this procedure always return 1."
+        }
+    }
+}
