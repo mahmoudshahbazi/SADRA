@@ -27,8 +27,9 @@ To prove SADRA's performance, versatility and speed, a large AC/DC systems with 
 
 In order to run the model, you need to:
 1. install AIMMS!
-2. import the data (case) file, via Data/Load Case
-3. run the optimisation, either by pushing F6, or via Page Manager/Case Dta and by clicking on Solve OPF!
+2. Download the project and open it in AIMMS
+3. import the data (case) file, via Data/Load Case
+4. run the optimisation, either by pushing F6, or via Page Manager/Case Dta and by clicking on Solve OPF!
 
 ## Contact
   If you have any questions or comments, please contant Dr Mahmoud Shahbazi at mahmoud.shahbazi@durham.ac.uk 
