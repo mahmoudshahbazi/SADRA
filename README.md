@@ -36,5 +36,5 @@ In order to run the model, you need to:
 ## Contact
   If you have any questions or comments, please contant Dr Mahmoud Shahbazi at mahmoud.shahbazi@durham.ac.uk 
 
-# Acknowledgment
+### Acknowledgment
 Thanks to Abraham Alvarez-Bustos for his works on FUBM implementation.
