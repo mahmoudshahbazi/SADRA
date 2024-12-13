@@ -31,5 +31,10 @@ In order to run the model, you need to:
 3. import the data (case) file, via Data/Load Case
 4. run the optimisation, either by pushing F6, or via Page Manager/Case Dta and by clicking on Solve OPF!
 
+
+
 ## Contact
   If you have any questions or comments, please contant Dr Mahmoud Shahbazi at mahmoud.shahbazi@durham.ac.uk 
+
+# Acknowledgment
+Thanks to Abraham Alvarez-Bustos for his works on FUBM implementation.
