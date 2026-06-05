@@ -21,9 +21,7 @@ modelling errors.
 "Matched impedance" means PMACDC was run with the converter transformer flag
 enabled so that it uses the same `rtf + j*xtf` series impedance that SADRA
 always applies to the VSC branch. With this match, the objective gap drops
-from 0.019% to 0.003% and PMACDC converges cleanly (it returns a
-NUMERICAL_ERROR with the transformer flag off, while SADRA solves the same
-system without difficulty).
+from 0.019% to 0.003%.
 
 
 
