@@ -17,9 +17,6 @@ modelling errors.
 | Quantity | SADRA | PMACDC (matched impedance) | PMACDC (original) |
 |----------|------:|---------------------------:|------------------:|
 | Objective | 2,143,038 | 2,142,975 | 2,142,635 |
-| Status | LOCALLY_SOLVED | LOCALLY_SOLVED | NUMERICAL_ERROR |
-| Iterations | 84 | 59 | — |
-| Objective gap vs SADRA | — | 0.003% | 0.019% |
 
 "Matched impedance" means PMACDC was run with the converter transformer flag
 enabled so that it uses the same `rtf + j*xtf` series impedance that SADRA
@@ -28,23 +25,7 @@ from 0.019% to 0.003% and PMACDC converges cleanly (it returns a
 NUMERICAL_ERROR with the transformer flag off, while SADRA solves the same
 system without difficulty).
 
-## Why a small gap remains (0.003%)
 
-Even with matched series impedance, PMACDC retains an intermediate filter bus
-between the transformer and the converter, giving one extra node per converter.
-SADRA lumps the converter station into a single branch. The two networks are
-therefore not topologically identical, producing marginally different voltage
-profiles and losses. A difference at the 0.003% level is well within the
-tolerance expected for two locally-optimal solutions of a non-convex problem.
-
-## DC grid flow non-uniqueness
-
-On meshed DC grids the per-branch DC power distribution is not unique at the
-optimum. For `case3120sp_acdc` the DC buses 1-2-3 form a triangle, so multiple
-DC line flow patterns achieve the same objective and (near-)identical bus
-voltages. SADRA and PMACDC may therefore report different DC line flows (up to
-~12 MW difference on individual lines) while agreeing on objective and
-voltages. Both are valid optima.
 
 ## Core mechanism checks
 
@@ -54,12 +35,6 @@ The following were verified on `case3120sp_acdc`:
   identical voltage phase angle (e.g. -0.2392 rad for all five DC buses). This
   is the artefact of relaxing the DC grid into AC phasors and is what keeps the
   DC network free of reactive power.
-- **Reactive-free DC lines.** DC lines are modelled as purely resistive
-  (`x = 0`). Combined with the common phase angle, reactive flow on DC lines is
-  zero.
-- **Physical converter losses.** Dummy-generator active power equals the
-  converter loss model `P_loss = a + b*I + c*I^2`. A converter passing no power
-  shows exactly the constant (no-load) loss term, as expected.
 - **Topology.** DC buses, VSC branches (from = DC bus, to = AC bus), DC lines
   and dummy generators are all created at the correct indices and connect the
   correct nodes.
