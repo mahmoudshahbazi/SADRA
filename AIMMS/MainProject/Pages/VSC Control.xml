@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2023-09-15 22:17:19">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>70D356AD-AC87-4BA5-B70C-DF185A6ABC75</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Table">
+		<Location top="42" left="12" bottom="156" right="492" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>Pf( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="9" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>PfShiftControl( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="9" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ThetaShMin( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ThetaSh( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ThetaShMax( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="156" left="984" bottom="198" right="1152" />
+		<TabOrder>6</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Text</ButtonType>
+		<Title>"Solve OPF"</Title>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="Run">
+				<RunWhat>SpecificProcecure</RunWhat>
+				<Procedure>MainExecution</Procedure>
+				<AbortOnError>true</AbortOnError>
+			</Action>
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="114" left="984" bottom="150" right="1152" />
+		<TabOrder>7</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Text</ButtonType>
+		<Title>"Initialise"</Title>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<ActionSequence>
+			<Action Type="Run">
+				<RunWhat>SpecificProcecure</RunWhat>
+				<Procedure>MainInitialization</Procedure>
+				<AbortOnError>true</AbortOnError>
+			</Action>
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="36" bottom="48" right="462" />
+		<StaticText>Pf Control ThetaSh</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="78" left="984" bottom="108" right="1152" />
+		<TabOrder>8</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>Sbase</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="4" Decimals="0" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="0" left="0" bottom="24" right="174" />
+		<StaticText>CaseHVDC-ACDC</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="42" left="498" bottom="156" right="930" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>Qf( l in ConvAll )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="9" Decimals="2" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="498" bottom="48" right="924" />
+		<StaticText>Qf (Zero Constraint) Control Beq</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="186" left="6" bottom="300" right="312" />
+		<TabOrder>3</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( l )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( l )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="162" left="6" bottom="186" right="492" />
+		<StaticText>Vf (Vdc) Control Beq</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="186" left="318" bottom="300" right="516" />
+		<TabOrder>4</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>VmMin( Vdc )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="7" Decimals="4" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>Vm( Vdc )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="2" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>VmMax( Vdc )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="7" Decimals="4" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="42" left="984" bottom="72" right="1152" />
+		<TabOrder>5</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>GenCost</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="15" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="1026" bottom="48" right="1116" />
+		<StaticText>MW Base</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>ConvAll</Symbol>
+			<Symbol>Sbase</Symbol>
+			<Symbol>VmMax</Symbol>
+			<Symbol>VmMin</Symbol>
+			<Symbol>fb</Symbol>
+			<Symbol>tb</Symbol>
+			<Symbol>PfShiftControl</Symbol>
+			<Symbol>ThetaShMin</Symbol>
+			<Symbol>ThetaShMax</Symbol>
+			<Symbol>Vm</Symbol>
+			<Symbol>ThetaSh</Symbol>
+			<Symbol>Pf</Symbol>
+			<Symbol>Qf</Symbol>
+			<Symbol>GenCost</Symbol>
+			<Symbol>MainInitialization</Symbol>
+			<Symbol>MainExecution</Symbol>
+			<Symbol>l</Symbol>
+			<Symbol>Vdc</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

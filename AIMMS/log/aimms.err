@@ -1,0 +1,18 @@
+Execution error at line 34 in user-defined function section "MainInitialization", column 49.
+Division by zero error with 1 / 0. Current running indices: l = 'L0001'.
+Semantic error at line 15 in user-defined function section "MainInitialization", column 5.
+The identifier "VfBeq" has not been declared.
+Semantic error at line 1 in the range of variable "Beq", column 3.
+The identifier "BeqMin" has not been declared.
+Semantic error at line 14 in user-defined function section "MainInitialization", column 14.
+The identifier "BeqMax" has not been declared.
+Semantic error at line 1 in the range of variable "Beq", column 3.
+The identifier "BeqMin" has not been declared.
+Semantic error at line 14 in user-defined function section "MainInitialization", column 14.
+The identifier "BeqMax" has not been declared.
+Semantic error at line 13 in user-defined function section "MainInitialization", column 1.
+The identifier "Beq" has not been declared.
+Semantic error at line 33 in user-defined function section "MainInitialization", column 10.
+The identifier "Gsw" has not been declared.
+Semantic error at line 56 in user-defined function section "MainInitialization", column 1.
+The identifier "Gsw" has not been declared.

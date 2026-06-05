@@ -1,0 +1,327 @@
+<?xml version="1.0"?>
+<Page Version="4000" TimeStamp="2019-02-27 15:34:10">
+	<PageEditSize Type="Inherited" />
+	<ProjectUUID>3AC5991C-EEF2-45B6-AFF8-6A596FC5349A</ProjectUUID>
+	<TemplatesTabOrderPosition>1</TemplatesTabOrderPosition>
+	<Background Inherited="true" />
+	<PageObject Type="Button">
+		<Location top="126" left="1092" bottom="168" right="1206" />
+		<TabOrder>8</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Text</ButtonType>
+		<Title>"Solve OPF"</Title>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<ActionSequence>
+			<Action Type="Run">
+				<RunWhat>SpecificProcecure</RunWhat>
+				<Procedure>MainExecution</Procedure>
+				<AbortOnError>true</AbortOnError>
+			</Action>
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Button">
+		<Location top="78" left="1092" bottom="120" right="1206" />
+		<TabOrder>9</TabOrder>
+		<LeaveOnEnter>false</LeaveOnEnter>
+		<ButtonType>Text</ButtonType>
+		<Title>"Initialise"</Title>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<ActionSequence>
+			<Action Type="Run">
+				<RunWhat>SpecificProcecure</RunWhat>
+				<Procedure>MainInitialization</Procedure>
+				<AbortOnError>true</AbortOnError>
+			</Action>
+		</ActionSequence>
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="42" left="1092" bottom="72" right="1206" />
+		<TabOrder>10</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>Sbase</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="4" Decimals="0" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="1104" bottom="48" right="1194" />
+		<StaticText>MW Base</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="0" left="12" bottom="24" right="186" />
+		<StaticText>CaseHVDC-ACDC</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="B0667223-F963-46F0-A458-86DA17ECE351" Name="Title" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="42" left="948" bottom="72" right="1062" />
+		<TabOrder>7</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>GenCost</Identifier>
+			<FirstColumn>0</FirstColumn>
+			<NumberFormat Width="8" Decimals="4" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="960" bottom="48" right="1050" />
+		<StaticText>MW Base</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="42" left="12" bottom="168" right="246" />
+		<TabOrder>4</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ItrfNOM( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ItrfACT( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="18" bottom="42" right="240" />
+		<StaticText>Current VSC </StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="192" left="12" bottom="306" right="246" />
+		<TabOrder>5</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ReItrfNOM( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ReItrfACT( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="174" left="18" bottom="192" right="240" />
+		<StaticText>Real Current VSC </StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="192" left="252" bottom="306" right="486" />
+		<TabOrder>6</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ItrfNOM( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ItrfACT( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="174" left="258" bottom="192" right="480" />
+		<StaticText>Imaginary Current VSC </StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="330" left="12" bottom="444" right="246" />
+		<TabOrder>2</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ReYs( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ImYs( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="312" left="18" bottom="330" right="240" />
+		<StaticText>Ys VSC</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="330" left="252" bottom="444" right="486" />
+		<TabOrder>1</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>Zsm( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>ThetaZs( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="312" left="258" bottom="330" right="480" />
+		<StaticText>VSC |Zm| e^ jThetaZs </StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<PageObject Type="Table">
+		<Location top="42" left="252" bottom="168" right="588" />
+		<TabOrder>3</TabOrder>
+		<Font GUID="00000000-0000-0000-0000-000000000001" Name="Main Font" />
+		<Border Style="InShadow" Width="2" MarginTop="5" MarginRight="5" MarginBottom="5" MarginLeft="5" />
+		<BackgroundColor RGB="#ffffff" />
+		<RowIndentation>3</RowIndentation>
+		<ExplicitIdentifier>
+			<Identifier>fb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>tb( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="5" Decimals="0" Alignment="Right" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>G0( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>GswMin( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>Gsw( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" Alignment="Center" />
+		</ExplicitIdentifier>
+		<ExplicitIdentifier>
+			<Identifier>GswMax( allConv )</Identifier>
+			<FirstColumn>1</FirstColumn>
+			<NumberFormat Width="8" Decimals="5" />
+		</ExplicitIdentifier>
+	</PageObject>
+	<PageObject Type="Text">
+		<Location top="24" left="258" bottom="42" right="480" />
+		<StaticText>Gsw</StaticText>
+		<Alignment>Center</Alignment>
+		<Font GUID="89385217-4EF6-4AD1-9F1F-A263BEFD98F1" Name="Subtitle" />
+		<TextColor RGB="#000000" />
+	</PageObject>
+	<UsedReferences>
+		<Model>
+			<Symbol>Sbase</Symbol>
+			<Symbol>fb</Symbol>
+			<Symbol>tb</Symbol>
+			<Symbol>G0</Symbol>
+			<Symbol>GswMin</Symbol>
+			<Symbol>GswMax</Symbol>
+			<Symbol>Zsm</Symbol>
+			<Symbol>ThetaZs</Symbol>
+			<Symbol>ReYs</Symbol>
+			<Symbol>ImYs</Symbol>
+			<Symbol>ReItrfACT</Symbol>
+			<Symbol>ItrfACT</Symbol>
+			<Symbol>ReItrfNOM</Symbol>
+			<Symbol>ItrfNOM</Symbol>
+			<Symbol>Gsw</Symbol>
+			<Symbol>GenCost</Symbol>
+			<Symbol>MainInitialization</Symbol>
+			<Symbol>MainExecution</Symbol>
+			<Symbol>allConv</Symbol>
+		</Model>
+	</UsedReferences>
+</Page>

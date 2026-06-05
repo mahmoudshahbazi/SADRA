@@ -1,0 +1,14 @@
+﻿OCTERACT error: Your AIMMS license does not allow the use of this solver
+CONOPT error: Your Aimms license does not allow the use of this solver
+There is 107.734 Mb in use.
+Division by zero error with 1 / 0.
+Current running indices: l = 'L0925'.
+Warning: The element parameter "GenBusLoc" is not initialized (default values are used).
+Warning at line 1 in user-defined function section "MainExecution":
+The element parameter "GenBusLoc" is not initialized (default values are used).
+Warning: The element parameter "ConvGenLocation" is not initialized (default values are used).
+Warning at line 1 in user-defined function section "MainExecution":
+The element parameter "ConvGenLocation" is not initialized (default values are used).
+Warning: After 246 iterations IPOPT 3.11 was interrupted and OPF is still infeasible.
+Warning at line 1 in user-defined function section "MainExecution":
+After 246 iterations IPOPT 3.11 was interrupted and OPF is still infeasible.
