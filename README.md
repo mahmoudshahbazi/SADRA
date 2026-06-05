@@ -1,11 +1,11 @@
 # SADRA
 ## A Universal AC/DC Branch Model for Optimal Power Flow Studies
 
-SADRA is a new efficient universal AC/DC branch model for modelling hybrid AC/DC systems for optimal power flow studies with provisions of voltage and power controls. It provides a framework for modelling a wide variety of AC, DC and AC/DC elements including VSCs and VSC-interfaced elements (including point-to-point and multi-terminal HVDC), phase-shifter and tap-changing transformers, and in general, hybrid AC/DC systems, in one compact model. SADRA provides a direct link between AC and DC grids, and therefore it is able to use conventional AC equations for modelling. Moreover, it is capable of implementing VSC control actions as well. Due to its compact and simple structure, SADRA is fast and robust.
+SADRA is an efficient universal AC/DC branch model for modelling hybrid AC/DC systems for optimal power flow studies with provisions of voltage and power controls. It provides a framework for modelling a wide variety of AC, DC and AC/DC elements including VSCs and VSC-interfaced elements (including point-to-point and multi-terminal HVDC), phase-shifter and tap-changing transformers, and in general, hybrid AC/DC systems, in one compact model. SADRA provides a direct link between AC and DC grids, and therefore it is able to use conventional AC equations for modelling. Moreover, it is capable of implementing VSC control actions as well. Due to its compact and simple structure, SADRA is fast and robust.
 
 The method is described in:
 
-> M. Shahbazi et al., "SADRA: A Universal Branch Model for Steady-State Analysis of Hybrid AC/DC Networks," *IEEE Transactions on Power Systems*, vol. 40, no. 4, 2025. DOI: 10.1109/TPWRS.2024.3514815
+> M. Shahbazi, "SADRA: A Universal Branch Model for Steady-State Analysis of Hybrid AC/DC Networks," *IEEE Transactions on Power Systems*, vol. 40, no. 4, 2025. DOI: 10.1109/TPWRS.2024.3514815
 
 ## The model
 
@@ -21,8 +21,21 @@ This repository contains two implementations of SADRA:
 
 | Folder | Implementation | Description |
 |--------|----------------|-------------|
-| [`aimms/`](aimms/) | AIMMS | The original reference implementation in AIMMS. |
 | [`julia/`](julia/) | Julia / PowerModels | A package built on [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl), validated against PowerModelsACDC. |
+| [`aimms/`](aimms/) | AIMMS | The original reference implementation in AIMMS. |
+
+### Julia / PowerModels implementation (`julia/`)
+
+A PowerModels.jl implementation of SADRA for AC/DC optimal power flow. It transforms a PowerModelsACDC-format case into an augmented pure-AC network and solves it with the standard PowerModels machinery.
+
+```julia
+using SADRA, Ipopt
+result = solve_sadra_opf("case3120sp_acdc.m", Ipopt.Optimizer)
+println(result["objective"])
+```
+
+The Julia implementation reproduces PowerModelsACDC's AC/DC OPF results to within 0.003% on the 3120-bus benchmark (with matched converter impedance) and is faster on every case tested. See [`julia/VALIDATION.md`](julia/VALIDATION.md) for full details. This is a v0.1 research preview; see [`julia/README.md`](julia/README.md) for usage and current limitations.
+
 
 ### AIMMS implementation (`aimms/`)
 
@@ -37,17 +50,7 @@ To prove SADRA's performance, versatility and speed, a large AC/DC system with 3
 3. Import the data (case) file via Data / Load Case.
 4. Run the optimisation, either by pressing F6, or via Page Manager / Case Data and clicking Solve OPF.
 
-### Julia / PowerModels implementation (`julia/`)
 
-A PowerModels.jl implementation of SADRA for AC/DC optimal power flow. It transforms a PowerModelsACDC-format case into an augmented pure-AC network and solves it with the standard PowerModels machinery.
-
-```julia
-using SADRA, Ipopt
-result = solve_sadra_opf("case3120sp_acdc.m", Ipopt.Optimizer)
-println(result["objective"])
-```
-
-The Julia implementation reproduces PowerModelsACDC's AC/DC OPF results to within 0.003% on the 3120-bus benchmark (with matched converter impedance) and is faster on every case tested. See [`julia/VALIDATION.md`](julia/VALIDATION.md) for full details. This is a v0.1 research preview; see [`julia/README.md`](julia/README.md) for usage and current limitations.
 
 ## Contact
 
