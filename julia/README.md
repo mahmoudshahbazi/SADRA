@@ -12,7 +12,7 @@ machinery in PowerModels, with no DC-specific solver code.
 
 The method is described in:
 
-> M. Shahbazi et al., "SADRA: A Universal Branch Model for Steady-State
+> M. Shahbazi, "SADRA: A Universal Branch Model for Steady-State
 > Analysis of Hybrid AC/DC Networks," *IEEE Transactions on Power Systems*,
 > vol. 40, no. 4, 2025. DOI: 10.1109/TPWRS.2024.3514815
 
@@ -80,9 +80,6 @@ supported:
 - **Storage and unit commitment** — cases with storage components are not
   supported.
 - **Security-constrained OPF (SCOPF)**.
-
-Two PMACDC test cases (`case5_2grids_uc_hvdc`, `case67acdc_scopf`) currently
-return locally-infeasible and are under investigation.
 
 ## Status
 
