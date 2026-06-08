@@ -5,7 +5,7 @@ SADRA is an efficient universal AC/DC branch model for modelling hybrid AC/DC sy
 
 The method is described in:
 
-> M. Shahbazi, "SADRA: A Universal Branch Model for Steady-State Analysis of Hybrid AC/DC Networks," *IEEE Transactions on Power Systems*, vol. 40, no. 4, 2025. DOI: 10.1109/TPWRS.2024.3514815
+> M. Shahbazi, "An Efficient Universal AC/DC Branch Model for Optimal Power Flow Studies in Hybrid AC/DC Systems," *IEEE Transactions on Power Systems*, vol. 40, no. 4, pp. 3211-3221, July 2025. DOI: 10.1109/TPWRS.2024.3514815
 
 ## The model
 
@@ -21,21 +21,28 @@ This repository contains two implementations of SADRA:
 
 | Folder | Implementation | Description |
 |--------|----------------|-------------|
-| [`julia/`](julia/) | Julia / PowerModels | A package built on [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl), validated against PowerModelsACDC. |
+| [`julia/`](julia/) | Julia / PowerModels | A package built on [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl), with full VSC control modes and controlled transformers, validated against the AIMMS reference and PowerModelsACDC. |
 | [`aimms/`](aimms/) | AIMMS | The original reference implementation in AIMMS. |
 
 ### Julia / PowerModels implementation (`julia/`)
 
-A PowerModels.jl implementation of SADRA for AC/DC optimal power flow. It transforms a PowerModelsACDC-format case into an augmented pure-AC network and solves it with the standard PowerModels machinery.
+A PowerModels.jl implementation of SADRA for hybrid AC/DC optimal power flow, including the full set of converter control actions. It transforms a case (in PowerModelsACDC format, or the MATPOWER-FUBM format used by the paper's 1354-bus PEGASE case) into an augmented pure-AC network and solves it with the standard PowerModels machinery.
 
 ```julia
-using SADRA, Ipopt
-result = solve_sadra_opf("case3120sp_acdc.m", Ipopt.Optimizer)
+using SADRA, Ipopt, JuMP
+opt = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6)
+
+# Uncontrolled AC/DC OPF (PowerModelsACDC-format case)
+result = solve_sadra_opf("case3120sp_acdc.m", opt;
+                         setting = Dict("sadra_controls" => false))
+
+# Controlled AC/DC OPF (FUBM-format case with control actions)
+result = solve_sadra_fubm("sadra_case1354pegase_2MTDC_ctrls.m", opt)
+
 println(result["objective"])
 ```
 
-The Julia implementation reproduces PowerModelsACDC's AC/DC OPF results to within 0.003% on the 3120-bus benchmark (with matched converter impedance) and is faster on every case tested. See [`julia/VALIDATION.md`](julia/VALIDATION.md) for full details. This is a v0.1 research preview; see [`julia/README.md`](julia/README.md) for usage and current limitations.
-
+The Julia implementation has been validated against two independent references: it reproduces the **AIMMS reference** on the controlled 1354-bus PEGASE case (all five VSC control modes plus controlled phase-shifting and tap-changing transformers, objective 74,037.87), and reproduces **PowerModelsACDC**'s uncontrolled AC/DC OPF to within 0.003% on the 3120-bus benchmark. See [`julia/VALIDATION.md`](julia/VALIDATION.md) for the full numbers, reproduction steps and limitations, and [`julia/README.md`](julia/README.md) for usage.
 
 ### AIMMS implementation (`aimms/`)
 
