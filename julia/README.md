@@ -2,7 +2,8 @@
 
 A [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) implementation
 of the **SADRA** universal AC/DC branch model for optimal power flow in hybrid
-AC/DC networks.
+AC/DC networks, including full VSC converter control modes and controlled
+transformers.
 
 SADRA models VSC-based HVDC converters and DC grids using only standard AC
 power-flow equations, by representing each converter as a standard branch (with
@@ -12,9 +13,9 @@ machinery in PowerModels, with no DC-specific solver code.
 
 The method is described in:
 
-> M. Shahbazi, "SADRA: A Universal Branch Model for Steady-State
-> Analysis of Hybrid AC/DC Networks," *IEEE Transactions on Power Systems*,
-> vol. 40, no. 4, 2025. DOI: 10.1109/TPWRS.2024.3514815
+> M. Shahbazi, "An Efficient Universal AC/DC Branch Model for Optimal Power
+> Flow Studies in Hybrid AC/DC Systems," *IEEE Transactions on Power Systems*,
+> vol. 40, no. 4, pp. 3211-3221, July 2025. DOI: 10.1109/TPWRS.2024.3514815
 
 ## Installation
 
@@ -23,24 +24,64 @@ using Pkg
 Pkg.develop(path="path/to/SADRA")   # or Pkg.add once registered
 ```
 
-Dependencies: PowerModels, JuMP, and a nonlinear solver such as Ipopt.
+Dependencies: PowerModels, JuMP, and a nonlinear solver such as Ipopt. (XLSX is
+used only by the validation/comparison helpers.)
 
 ## Usage
 
+SADRA accepts two input formats and offers an optional, per-run control switch.
+
+### PowerModelsACDC-format cases
+
 ```julia
-using SADRA, Ipopt
+using SADRA, Ipopt, JuMP
 
-# Solve AC/DC OPF from a PowerModelsACDC-format .m case file
-result = solve_sadra_opf("case3120sp_acdc.m", Ipopt.Optimizer)
+opt = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6)
 
-println(result["termination_status"])
-println(result["objective"])
+# Uncontrolled AC/DC OPF (converter setpoints free, minimise cost)
+result = solve_sadra_opf("case3120sp_acdc.m", opt;
+                         setting = Dict("sadra_controls" => false))
+
+println(result["termination_status"])   # LOCALLY_SOLVED
+println(result["objective"])            # 2,143,038
 ```
 
-The input is a standard PowerModelsACDC `.m` case file containing `busdc`,
-`convdc` and `branchdc` sections. SADRA transforms these into an augmented
-pure-AC network internally, solves, and returns a PowerModels-style result
-dictionary.
+A PowerModelsACDC `.m` case contains `busdc`, `convdc` and `branchdc` sections.
+`solve_sadra_opf` transforms these into an augmented pure-AC network, solves,
+and returns a PowerModels-style result dictionary.
+
+### MATPOWER-FUBM-format cases (with control actions)
+
+The SADRA paper's 1354-bus PEGASE case is distributed in FUBM format, where the
+DC data is encoded inline in extended branch columns. Use `solve_sadra_fubm`:
+
+```julia
+using SADRA, Ipopt, JuMP
+
+opt = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6)
+
+# Controlled AC/DC OPF (controls applied by default)
+result = solve_sadra_fubm("test/data/sadra_case1354pegase_2MTDC_ctrls.m", opt)
+```
+
+### Control modes
+
+Converter and transformer control actions (paper eq. 22-24, Table I/IV) are
+applied automatically when present in the case. They can be disabled with
+`setting = Dict("sadra_controls" => false)` to recover the cost-minimising
+uncontrolled OPF, and restricted to specific converters (by AC bus number) for
+debugging with `setting = Dict("sadra_control_buses" => [7282])`.
+
+Supported control actions:
+
+- **VSC active-power setpoint** (`Pf`), with the converter loss correctly
+  included (`Pf = setpoint + P_dummy`).
+- **VSC DC-voltage control** (`Vdc`).
+- **VSC droop control** (`Pf = Pref - kdp*(Vdc - Vref) + P_dummy`).
+- **VSC phase pinning** (`theta = 0`, type I with no power setpoint).
+- **VSC AC-voltage control** (`Vac`).
+- **Controlled phase-shifting transformer (PST)** — from-side active power.
+- **Controlled tap-changing transformer (CTT)** — to-side voltage.
 
 ## How it works
 
@@ -56,35 +97,36 @@ dictionary.
 
 The OPF then uses standard PowerModels variables and power balance, with a
 small set of SADRA-specific constraints for the converter Ohm's law, current
-definition and loss equation.
+definition, loss equation, and (optionally) the control actions above.
+
+The `julia/` package reads everything from the case file: the FUBM ingest
+derives the control type from the `CONV_A` column, the setpoints from
+`VT_SET`/`VF_SET`/`PF`/`KDP`, the loss coefficients from `ALPHA1/2/3`, and the
+DC-bus bounds from the bus matrix. No case-specific values are hardcoded.
 
 ## Validation
 
-SADRA reproduces PowerModelsACDC's AC/DC OPF to within 0.003% on the 3120-bus
-benchmark (with matched converter impedance) and is faster on every case
-tested. See [VALIDATION.md](VALIDATION.md) for the full comparison, numbers and
-reproduction steps. PowerModelsACDC is required only to reproduce the
-comparison and is not a dependency of SADRA.
+SADRA has been validated against two independent references:
 
-## Current limitations (v0.1)
+- **Controlled case (1354-bus PEGASE, 2 DC grids):** reproduces the AIMMS
+  reference (paper Table IV-VI) on all five VSC control modes and both
+  controlled transformers, with objective 74,037.87.
+- **Uncontrolled case (3120-bus):** reproduces PowerModelsACDC's AC/DC OPF to
+  within 0.003% (with matched converter impedance), objective 2,143,038, and
+  solves faster on every case tested.
 
-This is an initial release covering standard VSC-based AC/DC OPF. Not yet
-supported:
+See [VALIDATION.md](VALIDATION.md) for the full numbers, the reproduction
+steps, and the limitations.
 
-- **Converter control modes** — droop control and fixed P/V/Q setpoints
-  (paper eq. 22-24). The OPF currently leaves converter set-points free to
-  minimise cost, matching PowerModelsACDC's `run_acdcopf`. Control-mode
-  constraints are present in the code but disabled by default.
-- **LCC (line-commutated converters)** — only VSC is modelled.
-- **Back-to-back VSC links** — `case5_b2bdc` is not yet handled.
-- **Storage and unit commitment** — cases with storage components are not
-  supported.
-- **Security-constrained OPF (SCOPF)**.
+## Limitations
 
-## Status
-
-v0.1 — research preview. The core VSC/DC-grid OPF is validated; control modes
-and the features listed above are planned for subsequent releases.
+See [VALIDATION.md](VALIDATION.md#known-limitations) for the full list. In
+brief: a convergence tolerance of `tol = 1e-6` is recommended (the unscaled
+3120-bus objective fails to converge at Ipopt's default `tol = 1e-8`); the
+distributed 1354-bus case file has been corrected to the AIMMS reference and
+therefore differs from the original FUBM distribution; LCC converters, storage,
+unit commitment and SCOPF are not modelled; and validation to date covers the
+two cases above.
 
 ## License
 
@@ -92,4 +134,10 @@ MIT License — see [LICENSE](LICENSE).
 
 ## Acknowledgement
 
-Built on PowerModels.jl and validated against PowerModelsACDC.jl.
+Built on PowerModels.jl and validated against PowerModelsACDC.jl and the SADRA
+AIMMS reference implementation. Thanks to Abraham Alvarez-Bustos for the FUBM
+work that SADRA builds on.
+
+## Contact
+
+Dr Mahmoud Shahbazi — <mahmoud.shahbazi@durham.ac.uk>
