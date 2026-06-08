@@ -1,5 +1,5 @@
 # SADRA
-## A Universal AC/DC Branch Model for Optimal Power Flow Studies
+## Julia (based on PowerModels) and AIMMS Implementation of a Universal AC/DC Branch Model for Optimal Power Flow Studies
 
 SADRA is an efficient universal AC/DC branch model for modelling hybrid AC/DC systems for optimal power flow studies with provisions of voltage and power controls. It provides a framework for modelling a wide variety of AC, DC and AC/DC elements including VSCs and VSC-interfaced elements (including point-to-point and multi-terminal HVDC), phase-shifter and tap-changing transformers, and in general, hybrid AC/DC systems, in one compact model. SADRA provides a direct link between AC and DC grids, and therefore it is able to use conventional AC equations for modelling. Moreover, it is capable of implementing VSC control actions as well. Due to its compact and simple structure, SADRA is fast and robust.
 
