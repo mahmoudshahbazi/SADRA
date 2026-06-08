@@ -19,7 +19,7 @@ function variable_ma(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, boun
         pm.model,
         [i in _PM.ids(pm, nw, :sadra_vsc_branch)],
         base_name = "$(nw)_ma",
-        start = 1.0
+        start = 0.95   # warm start: VSC taps converge to ~0.93-0.98 in practice
     )
     if bounded
         for (i, branch) in _PM.ref(pm, nw, :sadra_vsc_branch)
@@ -52,7 +52,11 @@ end
 # ------------------------------------------------------------------
 # iconv_ac: AC-side current magnitude (>= 0). Defined by constraint C:
 #   p_to^2 + q_to^2 = vm_t^2 * iconv_ac^2
-# Upper bound is the converter rated current (sadra_imax).
+# In the AIMMS reference, the converter current (ABSIt) is declared
+# Range:free — it has NO upper bound; it is purely the loss-equation input.
+# An artificial cap here makes high-power setpoints (e.g. Pf=-500MW ~ 5pu
+# current) infeasible. Real limits come from branch thermal rate + voltages.
+# We keep only the physical lower bound of 0 (it is a magnitude).
 # ------------------------------------------------------------------
 function variable_iconv_ac(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default, bounded::Bool=true)
     iconv_ac = _PM.var(pm, nw)[:iconv_ac] = JuMP.@variable(
@@ -60,11 +64,27 @@ function variable_iconv_ac(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default
         [i in _PM.ids(pm, nw, :sadra_vsc_branch)],
         base_name = "$(nw)_iconv_ac",
         lower_bound = 0.0,
-        start = 0.0
+        start = 1.0
     )
+    # Warm start: a current variable starting at 0 (or 1) is far from the
+    # solution for high-power converters (e.g. VSC4 needs i~4.7), and the
+    # nonlinear defining constraint p^2+q^2=vm^2*i^2 then takes many iterations
+    # to climb. Seed iconv_ac from the converter's setpoint power |Pset|/vm
+    # where a setpoint exists, else leave at 1.0.
+    for (i, branch) in _PM.ref(pm, nw, :sadra_vsc_branch)
+        pset = get(branch, "sadra_Pset", 0.0)
+        if pset != 0.0
+            JuMP.set_start_value(iconv_ac[i], abs(pset))  # vm~1 => i~|P|
+        end
+    end
+    # Cap current only for PMACDC input (v0.1 behaviour). For FUBM input the
+    # converter current is free (AIMMS ABSIt is Range:free); an artificial cap
+    # makes high-power setpoints infeasible. The FUBM ingest sets sadra_loss_pu.
     if bounded
         for (i, branch) in _PM.ref(pm, nw, :sadra_vsc_branch)
-            JuMP.set_upper_bound(iconv_ac[i], branch["sadra_imax"])
+            if !get(branch, "sadra_loss_pu", false)
+                JuMP.set_upper_bound(iconv_ac[i], branch["sadra_imax"])
+            end
         end
     end
     return iconv_ac

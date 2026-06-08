@@ -82,8 +82,8 @@ function sadra_transform!(data::Dict{String,Any})
             "index"      => new_i,
             "bus_i"      => new_i,
             "bus_type"   => 1,
-            "vm"         => busdc["Vdc"],
-            "va"         => 0.0,
+            "vm"         => 1.01,    # warm start near typical DC operating voltage
+            "va"         => -0.06,   # warm start near converged common DC angle
             "vmax"       => vdc_max,
             "vmin"       => vdc_min,
             "base_kv"    => busdc["basekVdc"],
@@ -209,35 +209,39 @@ function sadra_transform!(data::Dict{String,Any})
             # SADRA-specific metadata
             "sadra_vsc"    => true,
             "sadra_conv_i" => c_i,
-            "sadra_type_dc"  => get(conv, "type_dc", 2),
-            "sadra_type_ac"  => get(conv, "type_ac", 2),
-            "sadra_P_g"      => get(conv, "P_g", 0.0) / baseMVA,
-            "sadra_Q_g"      => get(conv, "Q_g", 0.0) / baseMVA,
-            "sadra_Vdcset"   => get(conv, "Vdcset", 1.0),
-            "sadra_Vtar"     => get(conv, "Vtar", 1.0),
             "sadra_imax"   => imax,
             "sadra_ma_min" => conv["Vmmin"],
             "sadra_ma_max" => conv["Vmmax"],
             "sadra_phi_min"=> -pi/2,
             "sadra_phi_max"=>  pi/2,
-            # Control mode (from SADRA paper Table I / eq 22-24)
+            # Control mode (from SADRA paper Table I / eq 22-24).
+            # type_dc: 1=P_f setpoint, 2=Vdc pin, 3=droop
+            # type_ac: 1=Q setpoint,   2=Vac pin
             "sadra_type_dc"  => conv["type_dc"],
             "sadra_type_ac"  => conv["type_ac"],
             "sadra_Pset"     => get(conv, "P_g", 0.0) / baseMVA,
             "sadra_Qset"     => get(conv, "Q_g", 0.0) / baseMVA,
             "sadra_Vdcset"   => get(conv, "Vdcset", 1.0),
             "sadra_Vtar"     => get(conv, "Vtar",   1.0),
-            # Loss coefficients normalised to p.u. matching PMACDC process_additional_data!
-            # Units: LossA [MW], LossB [MW/kA], LossC [MW/kA²]
-            # Base current: I_base_kA = baseMVA / (sqrt(3) * basekVac)
-            # LossA_pu = LossA / baseMVA
-            # LossB_pu = LossB * I_base_kA / baseMVA
-            # LossC_pu = LossC * I_base_kA^2 / baseMVA
+            # Droop (type_dc=3): P_f = Pref - kd*(vm_dc - Vdcset). eq 24.
+            # PMACDC stores droop slope as `droop`; Pdcset/Vdcset are the refs.
+            "sadra_droop_kd" => get(conv, "droop", 0.0),
+            "sadra_Pdcset"   => get(conv, "Pdcset", get(conv, "P_g", 0.0)) / baseMVA,
+            "sadra_droop_vref" => get(conv, "droop_vref", get(conv, "Vdcset", 1.0)),
+            # Loss coefficients. Two input conventions:
+            #  * PMACDC: LossA [MW], LossB [MW/kA], LossC [MW/kA²] -> kA-normalise.
+            #  * FUBM:   ALPHA1/2/3 already p.u. on p.u. current -> no normalisation.
+            #    The FUBM ingest sets conv["sadra_loss_pu"]=true.
             "sadra_LossA"  => conv["LossA"] / baseMVA,
-            "sadra_LossB"  => conv["LossB"] * (baseMVA / (sqrt(3) * conv["basekVac"])) / baseMVA,
-            "sadra_LossC"  => conv["LossCinv"] * (baseMVA / (sqrt(3) * conv["basekVac"]))^2 / baseMVA,
+            "sadra_LossB"  => get(conv, "sadra_loss_pu", false) ?
+                                  conv["LossB"] :
+                                  conv["LossB"] * (baseMVA / (sqrt(3) * conv["basekVac"])) / baseMVA,
+            "sadra_LossC"  => get(conv, "sadra_loss_pu", false) ?
+                                  conv["LossCinv"] :
+                                  conv["LossCinv"] * (baseMVA / (sqrt(3) * conv["basekVac"]))^2 / baseMVA,
             "sadra_dc_bus_i" => f_bus_ac,
             "sadra_ac_bus_i" => t_bus_ac,
+            "sadra_loss_pu"  => get(conv, "sadra_loss_pu", false),
         )
     end
 
@@ -257,16 +261,24 @@ function sadra_transform!(data::Dict{String,Any})
 
         # Losses are always consumed (never generated): pmax=0
         # ploss_max at rated current, using raw p.u. coefficients (matching PMACDC)
-        imax_gen  = get(conv, "Imax", 1.1)
-        I_base    = baseMVA / (sqrt(3) * conv["basekVac"])
-        lossA_pu  = conv["LossA"] / baseMVA
-        lossB_pu  = conv["LossB"] * I_base / baseMVA
-        lossC_pu  = conv["LossCinv"] * I_base^2 / baseMVA
-        ploss_max = lossA_pu + lossB_pu * imax_gen + lossC_pu * imax_gen^2
-        pmax = 0.0           # dummy gen only consumes power (losses)
-        pmin = -ploss_max    # worst case: full rated current
-        qmax = get(conv, "Qacmax", 100.0) / baseMVA
-        qmin = get(conv, "Qacmin", -100.0) / baseMVA
+        if get(conv, "sadra_loss_pu", false)
+            # FUBM path: converter current is uncapped (AIMMS-faithful), so
+            # losses can be large. Use AIMMS dummy-gen bounds.
+            pmax =  10.0; pmin = -10.0; qmax = 2.0; qmin = -2.0
+        else
+            # PMACDC path (v0.1): current is bounded by Imax, size pmin to the
+            # worst-case loss at rated current, as before.
+            imax_gen = get(conv, "Imax", 1.1)
+            I_base   = baseMVA / (sqrt(3) * conv["basekVac"])
+            lossA_pu = conv["LossA"] / baseMVA
+            lossB_pu = conv["LossB"] * I_base / baseMVA
+            lossC_pu = conv["LossCinv"] * I_base^2 / baseMVA
+            ploss_max = lossA_pu + lossB_pu * imax_gen + lossC_pu * imax_gen^2
+            pmax = 0.0
+            pmin = -ploss_max
+            qmax = get(conv, "Qacmax", 100.0) / baseMVA
+            qmin = get(conv, "Qacmin", -100.0) / baseMVA
+        end
 
         data["gen"]["$new_i"] = Dict{String,Any}(
             "index"      => new_i,
@@ -294,16 +306,16 @@ function sadra_transform!(data::Dict{String,Any})
 
     # ------------------------------------------------------------------
     # 7. Apply AC voltage setpoints for type_ac=2 converters
-    #    Pin AC bus vm via tight bounds
+    #    Pin AC bus vm via tight bounds (eq: Vac control)
     # ------------------------------------------------------------------
-    #= for (_, conv) in data["convdc"]
+    for (_, conv) in data["convdc"]
         if get(conv, "type_ac", 1) == 2
             ac_bus = conv["busac_i"]
             vtar = get(conv, "Vtar", 1.0)
             data["bus"]["$ac_bus"]["vmax"] = vtar
             data["bus"]["$ac_bus"]["vmin"] = vtar
         end
-    end =#
+    end
 
     # ------------------------------------------------------------------
     # 8. Store the index maps in data["sadra"] for use by other files

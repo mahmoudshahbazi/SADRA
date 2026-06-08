@@ -62,5 +62,8 @@ function sadra_build_ref!(pm::_PM.AbstractPowerModel; nw::Int=_PM.nw_id_default)
     end
     ref[:sadra_conv] = sadra_conv
 
+    # Controlled transformers (PST/CTT) — see xfmr_control.jl
+    sadra_build_xfmr_ref!(pm; nw=nw)
+
     return nothing
 end

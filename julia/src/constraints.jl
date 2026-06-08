@@ -118,23 +118,49 @@ function constraint_vsc_zero_qf(pm::_PM.AbstractACPModel, n::Int,
 end
 
 # ====================================================================
-# F. VSC control constraints — eq (22-23) of paper (optional)
+# F. VSC control constraints — eq (22-24) of paper (optional)
 # ====================================================================
-# Applied only when a converter is configured to control AC-side power.
-# Sign convention: p_to > 0 is power flowing from the AC bus into the
-# converter branch; the PMACDC setpoint P_g is positive when power flows
-# into the AC grid, hence p_to = -P_g (and likewise q_to = -Q_g).
-
+# P control: AIMMS pins the CONTROL setpoint, not the raw branch flow:
+#   Pf*Sbase - PfShiftControl*Sbase - Pg*Sbase = 0  ->  p_fr = p_set + pg
+# i.e. the branch from-side flow equals the setpoint plus the dummy-gen power
+# (the converter loss). Pinning p_fr == p_set directly (without +pg) is
+# infeasible: the true feasible p_fr differs from the setpoint by exactly Pg
+# (verified against AIMMS: VSC4 setpoint -5.0 -> Pf -5.0022 with Pg -0.0022).
 function constraint_vsc_p_setpoint(pm::_PM.AbstractACPModel, n::Int, i::Int,
-        t_idx, p_set)
-    p_to = _PM.var(pm, n, :p)[t_idx]
-    JuMP.@constraint(pm.model, p_to == -p_set)
+        f_idx, gen_i, p_set)
+    p_fr = _PM.var(pm, n, :p)[f_idx]
+    pg   = _PM.var(pm, n, :pg, gen_i)
+    JuMP.@constraint(pm.model, p_fr == p_set + pg)
 end
 
+# Q control (eq 23): reactive power on the to (AC) side fixed.
+# p_to/q_to > 0 is power from the AC bus into the branch; PMACDC Q_g is
+# positive into the AC grid, hence q_to == -Q_set.
 function constraint_vsc_q_setpoint(pm::_PM.AbstractACPModel, n::Int, i::Int,
         t_idx, q_set)
     q_to = _PM.var(pm, n, :q)[t_idx]
     JuMP.@constraint(pm.model, q_to == -q_set)
+end
+
+# DC voltage control (type_dc=2): pin DC bus vm to Vdcset.
+function constraint_vsc_vdc_setpoint(pm::_PM.AbstractACPModel, n::Int,
+        dc_bus, vdc_set)
+    vm_dc = _PM.var(pm, n, :vm, dc_bus)
+    JuMP.@constraint(pm.model, vm_dc == vdc_set)
+end
+
+# Droop control (type_dc=3, eq 24): matches AIMMS PfVdcDroop:
+#   Pf = Pref - kd*(vm_dc - Vdcref) + Pg
+# The +Pg (dummy-gen loss power) is essential: p_fr is the DC-side branch
+# flow, which differs from the net DC injection by the converter loss. The
+# AIMMS reference includes it, so we must too or the droop pins the wrong
+# quantity. Pg < 0 (a loss), so it shifts p_fr by the loss magnitude.
+function constraint_vsc_droop(pm::_PM.AbstractACPModel, n::Int, i::Int,
+        f_idx, dc_bus, gen_i, kd, p_ref, vdc_ref)
+    p_fr  = _PM.var(pm, n, :p)[f_idx]
+    vm_dc = _PM.var(pm, n, :vm, dc_bus)
+    pg    = _PM.var(pm, n, :pg, gen_i)
+    JuMP.@constraint(pm.model, p_fr == p_ref - kd * (vm_dc - vdc_ref) + pg)
 end
 
 

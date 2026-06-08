@@ -74,20 +74,44 @@ function constraint_vsc_zero_qf(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.
 end
 
 # F. Optional control setpoints
+# P control: p_fr == Pset + Pg (AIMMS PfShiftControl relation; +Pg = loss term).
 function constraint_vsc_p_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus  = branch["f_bus"]
     t_bus  = branch["t_bus"]
-    t_idx  = (i, t_bus, f_bus)
-    constraint_vsc_p_setpoint(pm, nw, i, t_idx, branch["sadra_P_g"])
+    f_idx  = (i, f_bus, t_bus)
+    conv_i = branch["sadra_conv_i"]
+    gen_i  = _PM.ref(pm, nw, :sadra_conv)[conv_i][:gen_i]
+    constraint_vsc_p_setpoint(pm, nw, i, f_idx, gen_i, branch["sadra_Pset"])
 end
 
+# Q control (eq 23): reactive power on the to (AC) side fixed to Qset.
 function constraint_vsc_q_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus  = branch["f_bus"]
     t_bus  = branch["t_bus"]
     t_idx  = (i, t_bus, f_bus)
-    constraint_vsc_q_setpoint(pm, nw, i, t_idx, branch["sadra_Q_g"])
+    constraint_vsc_q_setpoint(pm, nw, i, t_idx, branch["sadra_Qset"])
+end
+
+# DC voltage pin (type_dc=2): vm at the DC bus fixed to Vdcset.
+function constraint_vsc_vdc_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.nw_id_default)
+    branch = _PM.ref(pm, nw, :branch, i)
+    dc_bus = branch["f_bus"]
+    constraint_vsc_vdc_setpoint(pm, nw, dc_bus, branch["sadra_Vdcset"])
+end
+
+# Droop (type_dc=3, eq 24): P_f = Pdcset - kd*(vm_dc - Vdcref) + Pg.
+function constraint_vsc_droop(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.nw_id_default)
+    branch = _PM.ref(pm, nw, :branch, i)
+    f_bus  = branch["f_bus"]
+    t_bus  = branch["t_bus"]
+    f_idx  = (i, f_bus, t_bus)
+    conv_i = branch["sadra_conv_i"]
+    gen_i  = _PM.ref(pm, nw, :sadra_conv)[conv_i][:gen_i]
+    vdc_ref = get(branch, "sadra_droop_vref", branch["sadra_Vdcset"])
+    constraint_vsc_droop(pm, nw, i, f_idx, f_bus, gen_i,
+        branch["sadra_droop_kd"], branch["sadra_Pdcset"], vdc_ref)
 end
 
 function constraint_vsc_qg_link(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.nw_id_default)
