@@ -74,15 +74,26 @@ function constraint_vsc_zero_qf(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.
 end
 
 # F. Optional control setpoints
-# P control: p_fr == Pset + Pg (AIMMS PfShiftControl relation; +Pg = loss term).
+
+# P control. Two conventions:
+#   "dc"   (FUBM/AIMMS, default): p_fr == Pset + Pg, setpoint at the DC side
+#          net of losses. Calibrated against the AIMMS reference — unchanged.
+#   "grid" (MatACDC/PMACDC): p_to == -Pset, setpoint at the PCC, matching
+#          PMACDC's constraint_active_conv_setpoint.
 function constraint_vsc_p_setpoint(pm::_PM.AbstractPowerModel, i::Int; nw::Int=_PM.nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus  = branch["f_bus"]
     t_bus  = branch["t_bus"]
-    f_idx  = (i, f_bus, t_bus)
-    conv_i = branch["sadra_conv_i"]
-    gen_i  = _PM.ref(pm, nw, :sadra_conv)[conv_i][:gen_i]
-    constraint_vsc_p_setpoint(pm, nw, i, f_idx, gen_i, branch["sadra_Pset"])
+    side   = get(branch, "sadra_pset_side", "dc")
+    if side == "grid"
+        t_idx = (i, t_bus, f_bus)
+        constraint_vsc_p_setpoint_grid(pm, nw, i, t_idx, branch["sadra_Pset"])
+    else
+        f_idx  = (i, f_bus, t_bus)
+        conv_i = branch["sadra_conv_i"]
+        gen_i  = _PM.ref(pm, nw, :sadra_conv)[conv_i][:gen_i]
+        constraint_vsc_p_setpoint(pm, nw, i, f_idx, gen_i, branch["sadra_Pset"])
+    end
 end
 
 # Q control (eq 23): reactive power on the to (AC) side fixed to Qset.

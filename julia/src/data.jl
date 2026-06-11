@@ -126,12 +126,15 @@ function sadra_transform!(data::Dict{String,Any})
         data["branch"]["$new_i"] = Dict{String,Any}(
             "index"    => new_i,
             "f_bus"    => f_bus_ac,
-            "t_bus"    => t_bus_ac,
-            "br_r"     => brdc["r"],
-            "br_x"     => DC_X_STUB,
-            "br_b"     => 0.0,
-            "g_fr"     => 0.0,
-            "g_to"     => 0.0,
+            "t_bus" => t_bus_ac,
+            # new — MatACDC/PMACDC bipolar convention: P = dcpol·(1/r)·vf·(vf−vt),
+            # so the equivalent AC branch resistance is r/dcpol. FUBM-parsed data has
+            # no "dcpol" key and its r is already in the equivalent-AC convention -> /1.
+            "br_r" => brdc["r"] / get(data, "dcpol", 1),
+            "br_x" => DC_X_STUB,
+            "br_b" => 0.0,
+            "g_fr" => 0.0,
+            "g_to" => 0.0,
             "b_fr"     => 0.0,
             "b_to"     => 0.0,
             "tap"      => 1.0,
@@ -208,6 +211,7 @@ function sadra_transform!(data::Dict{String,Any})
             "transformer" => true,    # tell PM this is a transformer branch
             # SADRA-specific metadata
             "sadra_vsc"    => true,
+            "sadra_pset_side" => "grid",   # PMACDC convention: P_g defined at the PCC (grid side)
             "sadra_conv_i" => c_i,
             "sadra_imax"   => imax,
             "sadra_ma_min" => conv["Vmmin"],

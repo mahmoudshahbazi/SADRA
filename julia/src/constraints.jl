@@ -133,6 +133,16 @@ function constraint_vsc_p_setpoint(pm::_PM.AbstractACPModel, n::Int, i::Int,
     JuMP.@constraint(pm.model, p_fr == p_set + pg)
 end
 
+# P control, grid-side convention (MatACDC/PMACDC): P_g is defined at the
+# PCC, positive into the AC grid. p_to > 0 is power from the AC bus into
+# the branch, hence p_to == -Pset — exactly mirroring the Q constraint.
+# Losses are then absorbed on the DC side, as in PMACDC's PF.
+function constraint_vsc_p_setpoint_grid(pm::_PM.AbstractACPModel, n::Int, i::Int,
+        t_idx, p_set)
+    p_to = _PM.var(pm, n, :p)[t_idx]
+    JuMP.@constraint(pm.model, p_to == -p_set)
+end
+
 # Q control (eq 23): reactive power on the to (AC) side fixed.
 # p_to/q_to > 0 is power from the AC bus into the branch; PMACDC Q_g is
 # positive into the AC grid, hence q_to == -Q_set.
