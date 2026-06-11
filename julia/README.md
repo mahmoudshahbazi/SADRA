@@ -1,9 +1,9 @@
 # SADRA.jl
 
 A [PowerModels.jl](https://github.com/lanl-ansi/PowerModels.jl) implementation
-of the **SADRA** universal AC/DC branch model for optimal power flow in hybrid
-AC/DC networks, including full VSC converter control modes and controlled
-transformers.
+of the **SADRA** universal AC/DC branch model for optimal power flow and
+(from v1.1) power flow in hybrid AC/DC networks, including full VSC converter
+control modes and controlled transformers.
 
 SADRA models VSC-based HVDC converters and DC grids using only standard AC
 power-flow equations, by representing each converter as a standard branch (with
@@ -64,6 +64,41 @@ opt = optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6)
 result = solve_sadra_fubm("test/data/sadra_case1354pegase_2MTDC_ctrls.m", opt)
 ```
 
+### Power flow (v1.1)
+
+```julia
+# PowerModelsACDC-format case
+result = solve_sadra_pf("test/data/case5_acdc.m", opt)
+
+# MATPOWER-FUBM-format case
+result = solve_sadra_fubm_pf("test/data/sadra_case1354pegase_2MTDC_ctrls.m", opt)
+```
+
+The power flow is posed, as in PowerModels and PowerModelsACDC, as a
+feasibility problem (no objective) solved by the same nonlinear solver:
+generator active power is fixed at all generators except the slack, voltage
+magnitude is fixed at PV and slack buses, and the reference angle is set.
+Converter controls are **mandatory** in the power flow -- they are the PF
+specification itself, with each converter control pinning one converter
+degree of freedom. Each DC island must contain exactly one DC-voltage-
+controlled (or droop) converter acting as the DC slack; this is enforced by
+a determinacy check that errors on under-determined cases rather than
+returning an arbitrary feasible point.
+
+Unlike the OPF, the power flow **reports** limit violations rather than
+enforcing them: thermal limits, angle-difference limits, voltage bounds and
+converter current ratings are not imposed. Converter variables use wide
+finite bounds (`ma` in [0.5, 2], `phi` in [-pi, pi], converter current
+bounded below by 0 only) for solver conditioning; a power flow that is
+infeasible because `ma` would need to leave [0.5, 2] indicates a genuinely
+extreme operating point.
+
+Note on conventions: on the PowerModelsACDC-format path, the converter
+active-power setpoint `P_g` is pinned at the grid side (PCC), matching the
+MatACDC/PowerModelsACDC convention. On the FUBM-format path the setpoint
+keeps the DC-side convention (`Pf = setpoint + P_dummy`) used by the AIMMS
+reference.
+
 ### Control modes
 
 Converter and transformer control actions (paper eq. 22-24, Table I/IV) are
@@ -115,8 +150,36 @@ SADRA has been validated against two independent references:
   within 0.003% (with matched converter impedance), objective 2,143,038, and
   solves faster on every case tested.
 
+- **Power flow (v1.1):** validated internally by reproducing SADRA OPF
+  states to machine precision (max bus-voltage deviation 9e-16 on
+  case5_acdc, 1e-9 on a 10-converter meshed-DC case; 2e-5 on the
+  3-zone/2-grid case24, fully attributed to active OPF inequality bounds
+  that the unbounded PF legitimately drifts off), and externally against
+  PowerModelsACDC's AC/DC power flow (max bus-voltage difference 1.2e-4 on
+  case5_acdc and 4.6e-4 on the 10-converter case, attributed to the
+  converter-station representation and the loss-measurement convention).
+  Known comparison caveats: PowerModelsACDC's PF can leave a Vac-controlled
+  converter's AC degree of freedom unpinned (observed on
+  case24_3zones_acdc bus 204), and at a voltage-controlled bus that also
+  hosts free-Q generators the reactive split between converter and
+  generators is non-unique (the bus state is unique). The script
+  `test_pf_case.jl` reproduces all of these checks.
+
 See [VALIDATION.md](VALIDATION.md) for the full numbers, the reproduction
 steps, and the limitations.
+
+## Changes vs v1.0 (important)
+
+The bipolar DC branch resistance is now divided by `dcpol` on the
+PowerModelsACDC-format path, as required by the MatACDC convention
+(`P = dcpol * (1/r) * v_f * (v_f - v_t)`). In v1.0 the effective DC line
+resistance on this path was a factor `dcpol` (typically 2) too large, so
+**v1.0 results on PowerModelsACDC-format cases are not reproduced by
+v1.1**. The FUBM-format path carries no `dcpol` key and is unaffected; the
+1354-bus PEGASE reference objective is unchanged. The PowerModelsACDC-path
+active-power setpoint convention also moved from the DC side to the grid
+side (see Power flow notes above), affecting controlled OPF and PF on that
+path.
 
 ## Limitations
 
@@ -125,8 +188,14 @@ brief: a convergence tolerance of `tol = 1e-6` is recommended (the unscaled
 3120-bus objective fails to converge at Ipopt's default `tol = 1e-8`); the
 distributed 1354-bus case file has been corrected to the AIMMS reference and
 therefore differs from the original FUBM distribution; LCC converters, storage,
-unit commitment and SCOPF are not modelled; and validation to date covers the
-two cases above.
+unit commitment and SCOPF are not modelled; validation to date covers the
+cases above; droop control on the PowerModelsACDC-format path is not yet
+exercised by a power-flow test case; the FUBM-format power flow requires a
+convention for converters with no AC-side control (`type_ac = 0`), still to
+be settled; and the converter station is represented by a single branch
+(transformer impedance), so the filter shunt and phase-reactor impedance of
+the PowerModelsACDC station model are not yet represented (the ~1e-4
+power-flow agreement floor; planned for v1.2).
 
 ## License
 
