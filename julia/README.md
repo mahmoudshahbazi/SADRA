@@ -145,7 +145,7 @@ SADRA has been validated against two independent references:
 
 - **Controlled case (1354-bus PEGASE, 2 DC grids):** reproduces the AIMMS
   reference (paper Table IV-VI) on all five VSC control modes and both
-  controlled transformers, with objective 74,037.87.
+  controlled transformers, with objective 74,037.8.
 - **Uncontrolled case (3120-bus):** reproduces PowerModelsACDC's AC/DC OPF to
   within 0.003% (with matched converter impedance), objective 2,143,038, and
   solves faster on every case tested.
@@ -184,8 +184,7 @@ path.
 ## Limitations
 
 See [VALIDATION.md](VALIDATION.md#known-limitations) for the full list. In
-brief: a convergence tolerance of `tol = 1e-6` is recommended (the unscaled
-3120-bus objective fails to converge at Ipopt's default `tol = 1e-8`); the
+brief: a convergence tolerance of `tol = 1e-7` is recommended; the
 distributed 1354-bus case file has been corrected to the AIMMS reference and
 therefore differs from the original FUBM distribution; LCC converters, storage,
 unit commitment and SCOPF are not modelled; validation to date covers the
